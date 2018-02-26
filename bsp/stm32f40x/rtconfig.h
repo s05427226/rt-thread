@@ -78,7 +78,7 @@
 #define RT_CONSOLEBUF_SIZE	128
 
 /* SECTION: finsh, a C-Express shell */
-#define RT_USING_FINSH
+//#define RT_USING_FINSH
 /* Using symbol table */
 #define FINSH_USING_SYMTAB
 #define FINSH_USING_DESCRIPTION
@@ -107,7 +107,7 @@
 // #define RT_USING_DFS_ROMFS
 
 /* SECTION: lwip, a lighwight TCP/IP protocol stack */
-/* #define RT_USING_LWIP */
+//#define RT_USING_LWIP
 /* Enable ICMP protocol*/
 #define RT_LWIP_ICMP
 /* Enable UDP protocol*/
@@ -138,6 +138,11 @@
 #define RT_LWIP_MSKADDR2	255
 #define RT_LWIP_MSKADDR3	0
 
+
+#define RT_LWIP_IPADDR	"192.168.1.201"
+#define RT_LWIP_GWADDR	"192.168.1.1"
+#define RT_LWIP_MSKADDR	"192.168.1.1"
+
 /* tcp thread options */
 #define RT_LWIP_TCPTHREAD_PRIORITY		12
 #define RT_LWIP_TCPTHREAD_MBOX_SIZE		4
@@ -155,5 +160,15 @@
 
 /* RT_GDB_STUB */
 //#define RT_USING_GDB
+
+#define RT_USING_GUIENGINE
+
+#define RTGUI_NAME_MAX        16  
+
+#define RTGUI_USING_FONT16
+
+#define RTGUI_IMAGE_JPEG 
+
+#define RTGUI_USING_HW_CURSOR
 
 #endif

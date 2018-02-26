@@ -885,36 +885,36 @@ void EXTI9_5_IRQHandler(void)
     rt_interrupt_leave();
 }
 
-void EXTI15_10_IRQHandler(void)
-{
-    /* enter interrupt */
-    rt_interrupt_enter();
-    if (EXTI_GetITStatus(EXTI_Line10) != RESET)
-    {
-        pin_irq_hdr(10);
-    }
-    if (EXTI_GetITStatus(EXTI_Line11) != RESET)
-    {
-        pin_irq_hdr(11);
-    }
-    if (EXTI_GetITStatus(EXTI_Line12) != RESET)
-    {
-        pin_irq_hdr(12);
-    }
-    if (EXTI_GetITStatus(EXTI_Line13) != RESET)
-    {
-        pin_irq_hdr(13);
-    }
-    if (EXTI_GetITStatus(EXTI_Line14) != RESET)
-    {
-        pin_irq_hdr(14);
-    }
-    if (EXTI_GetITStatus(EXTI_Line15) != RESET)
-    {
-        pin_irq_hdr(15);
-    }
-    /* leave interrupt */
-    rt_interrupt_leave();
-}
+//void EXTI15_10_IRQHandler(void)
+//{
+//    /* enter interrupt */
+//    rt_interrupt_enter();
+//    if (EXTI_GetITStatus(EXTI_Line10) != RESET)
+//    {
+//        pin_irq_hdr(10);
+//    }
+//    if (EXTI_GetITStatus(EXTI_Line11) != RESET)
+//    {
+//        pin_irq_hdr(11);
+//    }
+//    if (EXTI_GetITStatus(EXTI_Line12) != RESET)
+//    {
+//        pin_irq_hdr(12);
+//    }
+//    if (EXTI_GetITStatus(EXTI_Line13) != RESET)
+//    {
+//        pin_irq_hdr(13);
+//    }
+//    if (EXTI_GetITStatus(EXTI_Line14) != RESET)
+//    {
+//        pin_irq_hdr(14);
+//    }
+//    if (EXTI_GetITStatus(EXTI_Line15) != RESET)
+//    {
+//        pin_irq_hdr(15);
+//    }
+//    /* leave interrupt */
+//    rt_interrupt_leave();
+//}
 
 #endif

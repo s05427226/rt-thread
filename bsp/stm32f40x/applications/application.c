@@ -27,6 +27,16 @@
 #include <gdb_stub.h>
 #endif
 
+#ifdef RT_USING_GUIENGINE
+#include "drv_lcd.h"
+#include <rtgui/rtgui.h>
+#include <rtgui/rtgui_server.h>
+#include <rtgui/rtgui_system.h>
+#include <rtgui/driver.h>
+#include <rtgui/calibration.h>
+#endif
+
+
 void rt_init_thread_entry(void* parameter)
 {
     /* GDB STUB */
@@ -50,6 +60,37 @@ void rt_init_thread_entry(void* parameter)
         rt_kprintf("TCP/IP initialized!\n");
     }
 #endif
+	
+		{
+			extern int rt_hw_ex_ram_init(void);
+			rt_hw_ex_ram_init();
+		}
+		
+#ifdef RT_USING_GUIENGINE
+		{
+			extern void rtgui_touch_hw_init(void);
+			
+			rtgui_touch_hw_init();
+			
+			calibration_init();
+		}
+		
+		{
+			extern void rt_gui_demo_init(void);
+			rt_device_t device;
+			
+			rt_hw_lcd_init();
+
+			device = rt_device_find("lcd");
+			/* re-set graphic device */
+			rtgui_graphic_set_device(device);
+			
+			rtgui_system_server_init();
+					
+			rt_gui_demo_init();
+		}
+#endif
+	
 }
 
 int rt_application_init()

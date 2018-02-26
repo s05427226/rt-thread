@@ -10,6 +10,7 @@ src/blit.c
 src/box.c
 src/color.c
 src/container.c
+src/calibration.c
 src/dc.c
 src/dc_blend.c
 src/dc_buffer.c
@@ -46,6 +47,43 @@ src/topwin.c
 src/widget.c
 src/window.c
 ''')
+
+widgets_src = Split("""
+src/widgets/box.c
+src/widgets/button.c
+src/widgets/checkbox.c
+src/widgets/combobox.c
+src/widgets/iconbox.c
+src/widgets/label.c
+src/widgets/textview.c
+src/widgets/listctrl.c
+src/widgets/menu.c
+src/widgets/progressbar.c
+src/widgets/radiobox.c
+src/widgets/slider.c
+src/widgets/scrollbar.c
+src/widgets/staticline.c
+src/widgets/textbox.c
+src/widgets/listbox.c
+src/widgets/title.c
+src/widgets/notebook.c
+src/widgets/container.c
+src/widgets/list_view.c
+src/widgets/filelist_view.c
+src/widgets/widget.c
+src/widgets/window.c
+src/widgets/panel.c
+src/widgets/groupbox.c
+src/widgets/edit.c
+src/widgets/mv_view.c
+src/widgets/plot.c
+src/widgets/plot_curve.c
+src/widgets/digtube.c
+src/widgets/digfont.c
+""")
+
+#src = src + widgets_src
+
 CPPPATH = [cwd + '/include']
 
 group = []
