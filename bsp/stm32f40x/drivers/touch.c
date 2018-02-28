@@ -276,7 +276,6 @@ void touch_timeout(void* parameter)
 
             /* init mouse button */
             emouse.button = (RTGUI_MOUSE_BUTTON_RIGHT |RTGUI_MOUSE_BUTTON_DOWN);
-//            rt_kprintf("touch motion: (%d, %d)\n", emouse.x, emouse.y);
         }
     }
 
@@ -301,6 +300,7 @@ rt_inline void EXTI_Enable(rt_uint32_t enable)
 {
     EXTI_InitTypeDef EXTI_InitStructure;
 
+		SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOG, EXTI_PinSource13);
     /* Configure  EXTI  */
     EXTI_InitStructure.EXTI_Line = EXTI_Line13;
     EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
@@ -331,14 +331,15 @@ static void EXTI_Configuration(void)
         GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
 				GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
 				GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-				GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-				GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+				GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+				GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
 			
         GPIO_Init(GPIOG,&GPIO_InitStructure);
     }
-	
+
     /* Configure  EXTI  */
     EXTI_Enable(1);
+		EXTI_GenerateSWInterrupt(EXTI_Line13);
 }
 
 /* RT-Thread Device Interface */
@@ -352,12 +353,14 @@ static rt_err_t rtgui_touch_init (rt_device_t dev)
         GPIO_InitTypeDef GPIO_InitStructure;
 
         RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE);
+				/* Enable SYSCFG clock */
+				RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 
 				GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
 				GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 				GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 				GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-				GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+				GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	
         GPIO_Init(GPIOA,&GPIO_InitStructure);
         CS_1();
@@ -367,6 +370,7 @@ static rt_err_t rtgui_touch_init (rt_device_t dev)
     WriteDataTo7843( 1<<7 ); /* ´ò¿ªÖÐ¶Ï */
     CS_1();
 
+		rt_timer_start(touch->poll_timer);
     return RT_EOK;
 }
 
@@ -403,13 +407,16 @@ static rt_err_t rtgui_touch_control (rt_device_t dev, int cmd, void *args)
 
 void EXTI15_10_IRQHandler(void)
 {
-    /* disable interrupt */
-    EXTI_Enable(0);
+		if(EXTI_GetITStatus(EXTI_Line13) != RESET)
+		{
+			/* disable interrupt */
+			EXTI_Enable(0);
 
-    /* start timer */
-    rt_timer_start(touch->poll_timer);
+			/* start timer */
+			rt_timer_start(touch->poll_timer);
 
-    EXTI_ClearITPendingBit(EXTI_Line13);
+			EXTI_ClearITPendingBit(EXTI_Line13);
+		}
 }
 
 void rtgui_touch_hw_init(void)

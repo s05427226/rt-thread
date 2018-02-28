@@ -140,7 +140,7 @@ static void calibration_data_post(rt_uint16_t x, rt_uint16_t y)
 static rt_bool_t calibration_event_handler(struct rtgui_object *object, struct rtgui_event *event)
 {
     struct rtgui_widget *widget = RTGUI_WIDGET(object);
-    rtgui_rect_t label_rect = {120, 250, 680, 270};
+    rtgui_rect_t label_rect = {10, 100, 200, 200};
     switch (event->type)
     {
     case RTGUI_EVENT_PAINT:
@@ -174,7 +174,7 @@ static rt_bool_t calibration_event_handler(struct rtgui_object *object, struct r
                                 0,
                                 2 * CALIBRATION_HEIGHT);
             rtgui_dc_draw_text(dc,
-                               "Please touch the sight bead on the lift top to finish Calibration!",
+                               "Please touch left top sight bead!",
                                &label_rect);
             RTGUI_WIDGET_FOREGROUND(widget) = red;
             rtgui_dc_fill_circle(dc,
@@ -193,7 +193,7 @@ static rt_bool_t calibration_event_handler(struct rtgui_object *object, struct r
                                 0,
                                 2 * CALIBRATION_HEIGHT);
             rtgui_dc_draw_text(dc,
-                               "Please touch the sight bead on the right top to finish Calibration!",
+                               "Please touch right top sight bead!",
                                &label_rect);
             RTGUI_WIDGET_FOREGROUND(widget) = red;
             rtgui_dc_fill_circle(dc,
@@ -212,7 +212,7 @@ static rt_bool_t calibration_event_handler(struct rtgui_object *object, struct r
                                 calibration_ptr->height - 2 * CALIBRATION_HEIGHT,
                                 calibration_ptr->height);
             rtgui_dc_draw_text(dc,
-                               "Please touch the sight bead on the left bottom to finish Calibration!",
+                               "Please touch left bottom sight bead!",
                                &label_rect);
             RTGUI_WIDGET_FOREGROUND(widget) = red;
             rtgui_dc_fill_circle(dc,
@@ -231,7 +231,7 @@ static rt_bool_t calibration_event_handler(struct rtgui_object *object, struct r
                                 calibration_ptr->height - 2 * CALIBRATION_HEIGHT,
                                 calibration_ptr->height);
             rtgui_dc_draw_text(dc,
-                               "Please touch the sight bead on the right bottom to finish Calibration!",
+                               "Please touch right bottom sight bead!",
                                &label_rect);
             RTGUI_WIDGET_FOREGROUND(widget) = red;
             rtgui_dc_fill_circle(dc,
@@ -250,7 +250,7 @@ static rt_bool_t calibration_event_handler(struct rtgui_object *object, struct r
                                 calibration_ptr->height / 2 - CALIBRATION_HEIGHT,
                                 calibration_ptr->height / 2 + CALIBRATION_HEIGHT);
             rtgui_dc_draw_text(dc,
-                               "Please touch the sight bead on the center to finish Calibration!",
+                               "Please touch center sight bead!",
                                &label_rect);
             RTGUI_WIDGET_FOREGROUND(widget) = red;
             rtgui_dc_fill_circle(dc,

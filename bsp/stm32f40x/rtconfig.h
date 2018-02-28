@@ -62,9 +62,10 @@
 /* Using serial framework */
 #define RT_USING_SERIAL
 
-#define RT_USING_UART1
-#define RT_USING_UART2
-#define RT_USING_UART3
+//#define RT_USING_UART1
+//#define RT_USING_UART2
+//#define RT_USING_UART3
+#define RT_USING_UART6
 
 /* Using GPIO pin framework */
 #define RT_USING_PIN
@@ -78,30 +79,22 @@
 #define RT_CONSOLEBUF_SIZE	128
 
 /* SECTION: finsh, a C-Express shell */
-//#define RT_USING_FINSH
+#define RT_USING_FINSH
 /* Using symbol table */
 #define FINSH_USING_SYMTAB
 #define FINSH_USING_DESCRIPTION
 
 /* SECTION: device filesystem */
 /* Using Device file system */
-/* #define RT_USING_DFS */
-/* the max number of mounted filesystem */
-#define DFS_FILESYSTEMS_MAX			2
-/* the max number of opened files 		*/
-#define DFS_FD_MAX					4
-
-/* Using ELM FATFS */
-//#define RT_USING_DFS_ELMFAT
-#define RT_DFS_ELM_WORD_ACCESS
-/* Reentrancy (thread safe) of the FatFs module.  */
+#define RT_USING_DFS
+#define RT_USING_DFS_ELMFAT
 #define RT_DFS_ELM_REENTRANT
-/* Number of volumes (logical drives) to be used. */
+#define RT_DFS_ELM_WORD_ACCESS
 #define RT_DFS_ELM_DRIVES			2
-/* #define RT_DFS_ELM_USE_LFN			1 */
+#define RT_DFS_ELM_USE_LFN			0
 #define RT_DFS_ELM_MAX_LFN			255
-/* Maximum sector size to be handled. */
 #define RT_DFS_ELM_MAX_SECTOR_SIZE  512
+
 
 /* Using ROM file system */
 // #define RT_USING_DFS_ROMFS
@@ -170,5 +163,9 @@
 #define RTGUI_IMAGE_JPEG 
 
 #define RTGUI_USING_HW_CURSOR
+
+#define RTGUI_USING_FONTHZ
+
+#define RTGUI_USING_HZ_BMP
 
 #endif

@@ -10,6 +10,8 @@ board.c
 stm32f4xx_it.c
 usart.c
 exRAM.c
+spi.c
+spi_flash.c
 """)
 
 # add Ethernet drivers.
@@ -23,6 +25,7 @@ if GetDepend('RT_USING_PIN'):
 if GetDepend('RT_USING_GUIENGINE'):
 	src += ['drv_lcd.c']
 	src += ['touch.c']
+	src += ['touch_setup.c']
 	
 CPPPATH = [cwd]
 

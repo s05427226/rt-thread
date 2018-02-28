@@ -4,6 +4,30 @@ from building import *
 
 cwd = GetCurrentDir()
 src = Split('''
+demo/demo_view.c
+demo/demo_view_button.c
+demo/demo_view_label.c
+demo/demo_application.c
+demo/demo_view_checkbox.c
+demo/demo_view_progressbar.c
+demo/demo_view_scrollbar.c
+demo/demo_view_textbox.c
+demo/demo_view_radiobox.c
+demo/demo_plot.c
+demo/demo_view_animation.c
+demo/demo_view_benchmark.c
+demo/demo_view_combobox.c
+demo/demo_view_digtube.c
+demo/demo_view_listbox.c
+demo/demo_view_listctrl.c
+demo/demo_view_menu.c
+demo/demo_view_notebook.c
+demo/demo_view_slider.c
+demo/demo_view_edit.c
+demo/demo_view_image.c
+demo/demo_view_dc.c
+demo/demo_view_buffer_animation.c
+src/rtgui_mv_model.c
 src/asc12font.c
 src/asc16font.c
 src/blit.c
@@ -46,45 +70,42 @@ src/title.c
 src/topwin.c
 src/widget.c
 src/window.c
+src/rtgui_theme.c
 ''')
 
 widgets_src = Split("""
-src/widgets/box.c
-src/widgets/button.c
-src/widgets/checkbox.c
-src/widgets/combobox.c
-src/widgets/iconbox.c
-src/widgets/label.c
-src/widgets/textview.c
-src/widgets/listctrl.c
-src/widgets/menu.c
-src/widgets/progressbar.c
-src/widgets/radiobox.c
-src/widgets/slider.c
-src/widgets/scrollbar.c
-src/widgets/staticline.c
-src/widgets/textbox.c
-src/widgets/listbox.c
-src/widgets/title.c
-src/widgets/notebook.c
-src/widgets/container.c
-src/widgets/list_view.c
-src/widgets/filelist_view.c
-src/widgets/widget.c
-src/widgets/window.c
-src/widgets/panel.c
-src/widgets/groupbox.c
-src/widgets/edit.c
-src/widgets/mv_view.c
-src/widgets/plot.c
-src/widgets/plot_curve.c
-src/widgets/digtube.c
-src/widgets/digfont.c
+widgets/button.c
+widgets/checkbox.c
+widgets/combobox.c
+widgets/iconbox.c
+widgets/label.c
+widgets/textview.c
+widgets/listctrl.c
+widgets/menu.c
+widgets/progressbar.c
+widgets/radiobox.c
+widgets/slider.c
+widgets/scrollbar.c
+widgets/staticline.c
+widgets/textbox.c
+widgets/listbox.c
+widgets/notebook.c
+widgets/list_view.c
+widgets/filelist_view.c
+widgets/panel.c
+widgets/groupbox.c
+widgets/edit.c
+widgets/mv_view.c
+widgets/plot.c
+widgets/plot_curve.c
+widgets/digtube.c
+widgets/digfont.c
 """)
 
-#src = src + widgets_src
+src = src + widgets_src
 
 CPPPATH = [cwd + '/include']
+CPPPATH = CPPPATH + ['/demo']
 
 group = []
 if GetDepend('RT_USING_GUIENGINE'):

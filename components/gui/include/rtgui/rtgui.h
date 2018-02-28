@@ -36,6 +36,10 @@ extern "C" {
 #define _UI_BITBYTES(bits)      ((bits + 7)/8)
 #define _UI_ABS(x)              ((x)>=0? (x):-(x))
 
+#define RT_INT16_MAX        32767
+#define RT_INT16_MIN        (-RT_INT16_MAX-1)
+#define RTGUI_NOT_FOUND     (-1)
+
 /* MDK, GCC and MSVC all support __restrict keyword. */
 #define RTGUI_RESTRICT      __restrict
 #ifdef _MSC_VER
