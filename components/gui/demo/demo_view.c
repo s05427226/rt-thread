@@ -33,7 +33,7 @@ rtgui_container_t *demo_view(const char *title)
     struct rtgui_container  *container;
     struct rtgui_label      *label;
     struct rtgui_staticline *line;
-    struct rtgui_button     *next_btn, *prev_btn;
+    struct rtgui_button     *next_btn, *prev_btn,*reboot_btn;
     struct rtgui_rect       rect;
 
     container = rtgui_container_create();
@@ -48,8 +48,8 @@ rtgui_container_t *demo_view(const char *title)
     rtgui_widget_rect_to_device(RTGUI_WIDGET(container), &rect);
     rect.x1 += 5;
     rect.y1 += 5;
-    rect.x2 = rect.x1 + rt_strlen(title)*8;
-    rect.y2 = rect.y1 + 20;
+    rect.x2 = rect.x1 + rt_strlen(title)*10;
+    rect.y2 = rect.y1 + 23;
 
     /* 创建标题用的标签 */
     label = rtgui_label_create(title);

@@ -11,13 +11,14 @@
 #include <rtgui/widgets/edit.h>
 #include <rtgui/widgets/label.h>
 #include <rtgui/widgets/button.h>
+#include <rtgui/rtgui_server.h>
 
 #ifdef RTGUI_USING_DFS_FILERW
 void demo_edit_readin_file(struct rtgui_object *object, struct rtgui_event *event)
 {
     rtgui_button_t *button;
     struct rtgui_edit *edit;
-    const char *filename = "/test_readin.txt";
+    const char *filename = "/readin.txt";
     struct rtgui_filerw *file;
 
     RT_ASSERT(object != RT_NULL);
@@ -44,7 +45,7 @@ void demo_edit_saveas_file(struct rtgui_object *object, struct rtgui_event *even
 {
     rtgui_button_t *button;
     struct rtgui_edit *edit;
-    const char* filename = "/test_saveas.txt";
+    const char* filename = "/saveas.txt";
     struct rtgui_filerw *file;
 
     RT_ASSERT(object != RT_NULL);
@@ -78,6 +79,12 @@ void demo_edit_get_mem(struct rtgui_object* object, struct rtgui_event* event)
 	rt_kprintf("edit mem consume: %d\n", rtgui_edit_get_mem_consume(edit));
 }
 
+void demo_edit_reset(struct rtgui_object* object, struct rtgui_event* event)
+{
+	extern void Sys_Soft_Reset(void);
+	Sys_Soft_Reset();
+}
+
 rt_bool_t demo_edit_event_handler(struct rtgui_object* object, struct rtgui_event *event)
 {
 	rt_bool_t result;
@@ -98,63 +105,53 @@ rt_bool_t demo_edit_event_handler(struct rtgui_object* object, struct rtgui_even
 /* 创建用于演示edit控件的视图 */
 rtgui_container_t *demo_view_edit(void)
 {
-    rtgui_rect_t rect;
-    rtgui_container_t *container;
-    struct rtgui_edit *edit;
+	rtgui_rect_t rect;
+	rtgui_container_t *container;
+	struct rtgui_edit *edit;
 	struct rtgui_label *label;
-    struct rtgui_button *button;
+	struct rtgui_button *button;
 
-    /* 先创建一个演示用的视图 */
-    container = demo_view("Edit View");
+	/* 先创建一个演示用的视图 */
+	container = demo_view("Edit View");
 
-    edit = rtgui_edit_create(container, 10, 35, 220, 200);
-    rtgui_edit_set_text(edit, 
-                        "Edit beta v0.1\n"
-                        "Hello RT-Thread\n"
-                        "this's edit demo\n"
-                        "rtgui_edit_create\n"
-                        "rtgui_edit_append_line\n"
-                        "rtgui_edit_insert_line\n"
-                        "rtgui_edit_delete_line\n"
-                        "rtgui_edit_connect_line\n"
-						"双字节测试\n"
-                        "a\n"
-                        "b\n"
-                        "c\n"
-                        "d\n"
-                        "1234567890\n");
+	edit = rtgui_edit_create(container, 10, 35, 220, 100);
+	rtgui_edit_set_text(edit, 
+											"Edit beta v0.1\n"
+					"双字节测试\n"
+											"a\n"
+											"1234567890\n");
 
-    /* 创建一个按钮, 读取某个文件 */
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 10;
-    rect.x2 = rect.x1 + 100;
-    rect.y1 += 200;
-    rect.y2 = rect.y1 + 22;
-    button = rtgui_button_create("ReadIn File");
-    rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-    rtgui_container_add_child(container, RTGUI_WIDGET(button));
-    rtgui_button_set_onbutton(button, demo_edit_readin_file);
-    /* 使用user_data传递edit指针 */
-    RTGUI_WIDGET(button)->user_data = (rt_uint32_t)edit;
+	/* 创建一个按钮, 读取某个文件 */
+	demo_view_get_rect(container, &rect);
+	rect.x1 += 10;
+	rect.x2 = rect.x1 + 100;
+	rect.y1 += 100;
+	rect.y2 = rect.y1 + 24;
+	button = rtgui_button_create("ReadIn File");
+	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
+	rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	rtgui_button_set_onbutton(button, demo_edit_readin_file);
+	/* 使用user_data传递edit指针 */
+	RTGUI_WIDGET(button)->user_data = (rt_uint32_t)edit;
 
-    /* 创建一个按钮, 保存为某个文件 */
-    demo_view_get_rect(container, &rect);
-    rect.x1 += 130;
-    rect.x2 = rect.x1 + 100;
-    rect.y1 += 200;
-    rect.y2 = rect.y1 + 22;
-    button = rtgui_button_create("SaveAs File");
-    rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
-    rtgui_container_add_child(container, RTGUI_WIDGET(button));
-    rtgui_button_set_onbutton(button, demo_edit_saveas_file);
-    /* 使用user_data传递edit指针 */
-    RTGUI_WIDGET(button)->user_data = (rt_uint32_t)edit;
+	/* 创建一个按钮, 保存为某个文件 */
+	demo_view_get_rect(container, &rect);
+	rect.x1 += 130;
+	rect.x2 = rect.x1 + 100;
+	rect.y1 += 100;
+	rect.y2 = rect.y1 + 24;
+	button = rtgui_button_create("SaveAs File");
+	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
+	rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	rtgui_button_set_onbutton(button, demo_edit_saveas_file);
+	/* 使用user_data传递edit指针 */
+	RTGUI_WIDGET(button)->user_data = (rt_uint32_t)edit;
 
 	/* 创建一个标签, 显示EDIT的主要参数 */
 	demo_view_get_rect(container, &rect);
 	rect.x1 += 10;
 	rect.x2 = rect.x1 + 220;
-	rect.y1 += 225;
+	rect.y1 += 125;
 	rect.y2 = rect.y1 + 18;
 	label = rtgui_label_create("TRACK:");
 	RTGUI_WIDGET_TEXTALIGN(label) = RTGUI_ALIGN_LEFT | RTGUI_ALIGN_CENTER_VERTICAL;
@@ -170,13 +167,24 @@ rtgui_container_t *demo_view_edit(void)
 	rect.x1 += 150;
 	rect.x2 = rect.x1 + 80;
 	rect.y1 -= 42;
-	rect.y2 = rect.y1 + 20;
+	rect.y2 = rect.y1 + 22;
 	button = rtgui_button_create("Get Mem");
 	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
 	rtgui_container_add_child(container, RTGUI_WIDGET(button));
 	rtgui_button_set_onbutton(button, demo_edit_get_mem);
 	RTGUI_WIDGET(button)->user_data = (rt_uint32_t)edit;
 
-    return container;
+	/* 创建一个按钮*/
+	demo_view_get_rect(container, &rect);
+	rect.x1 += 230;
+	rect.x2 = rect.x1 + 80;
+	rect.y1 -= 42;
+	rect.y2 = rect.y1 + 22;
+	button = rtgui_button_create("Reset");
+	rtgui_widget_set_rect(RTGUI_WIDGET(button), &rect);
+	rtgui_container_add_child(container, RTGUI_WIDGET(button));
+	rtgui_button_set_onbutton(button, demo_edit_reset);
+	RTGUI_WIDGET(button)->user_data = (rt_uint32_t)edit;
+  return container;
 }
 #endif

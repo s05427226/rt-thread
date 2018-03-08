@@ -29,11 +29,14 @@
 static rtgui_list_t _rtgui_font_list;
 static struct rtgui_font *rtgui_default_font;
 
+extern struct rtgui_font rtgui_font_asc24;
+extern struct rtgui_font rtgui_font_arial24;
 extern struct rtgui_font rtgui_font_asc16;
 extern struct rtgui_font rtgui_font_arial16;
 extern struct rtgui_font rtgui_font_asc12;
 extern struct rtgui_font rtgui_font_arial12;
 #ifdef RTGUI_USING_FONTHZ
+extern struct rtgui_font rtgui_font_hz24;
 extern struct rtgui_font rtgui_font_hz16;
 extern struct rtgui_font rtgui_font_hz12;
 #endif
@@ -56,6 +59,13 @@ void rtgui_font_system_init()
     rtgui_font_system_add_font(&rtgui_font_asc12);
 #ifdef RTGUI_USING_FONTHZ
     rtgui_font_system_add_font(&rtgui_font_hz12);
+#endif
+#endif
+	
+#ifdef RTGUI_USING_FONT24
+    rtgui_font_system_add_font(&rtgui_font_asc24);
+#ifdef RTGUI_USING_FONTHZ
+    rtgui_font_system_add_font(&rtgui_font_hz24);
 #endif
 #endif
 }

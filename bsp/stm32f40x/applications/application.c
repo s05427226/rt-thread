@@ -51,6 +51,8 @@
 
 //#define TEST_CALIBRATION
 
+#ifdef RT_USING_GUIENGINE
+
 void load_touch_cfg()
 {
 	calibration_set_restore(calibration_restore);//initialize the pointer to load user data
@@ -58,6 +60,9 @@ void load_touch_cfg()
 	calibration_init();
 
 }
+
+#endif
+
 void rt_init_thread_entry(void* parameter)
 {
     /* GDB STUB */

@@ -14,9 +14,11 @@
  */
 #include <rtgui/dc.h>
 #include <rtgui/widgets/edit.h>
+#include <rtgui/widgets/button.h>
 #include <rtgui/widgets/scrollbar.h>
 #include <rtgui/rtgui_system.h>
 #include <rtgui/filerw.h>
+#include <rtgui/rtgui_server.h>
 
 extern int isprint(unsigned char ch); /* Quote from shell.c */
 static void rtgui_edit_draw_caret(struct rtgui_edit *edit);
@@ -27,6 +29,89 @@ static rt_bool_t rtgui_edit_onunfocus(struct rtgui_object *object, rtgui_event_t
 static rt_bool_t rtgui_edit_hscroll_handle(struct rtgui_widget *widget, rtgui_event_t *event);
 static rt_bool_t rtgui_edit_vscroll_handle(struct rtgui_widget *widget, rtgui_event_t *event);
 #endif
+
+rtgui_container_t *syscnt = NULL;
+extern struct rtgui_win *main_win;
+struct rtgui_edit *g_edit;
+
+#define MAX_INPUT_BTN	12
+
+struct rtgui_button *input_btn[MAX_INPUT_BTN];
+
+void hide_input_button()
+{
+	int i=0;
+	for (i = 0; i < MAX_INPUT_BTN; i++)
+		rtgui_widget_hide(RTGUI_WIDGET(input_btn[i]));
+}
+
+void show_input_button()
+{
+	int i=0;
+	for (i = 0; i < MAX_INPUT_BTN; i++) 
+		rtgui_widget_show(RTGUI_WIDGET(input_btn[i]));
+}
+
+static void num_key_hd(struct rtgui_object *obj, struct rtgui_event *eve)
+{
+	struct rtgui_event_kbd ekey;
+	struct rtgui_button *btn = RTGUI_BUTTON(obj);
+	
+	RT_ASSERT(obj);
+	RT_ASSERT(eve);
+	
+	rtgui_widget_focus(RTGUI_WIDGET(g_edit));
+	
+	RTGUI_EVENT_KBD_INIT(&ekey);
+	ekey.wid = main_win;
+	ekey.type = RTGUI_KEYDOWN;
+	if (RTGUI_LABEL(btn)->text[0] == '^'){
+		hide_input_button();
+		return;
+	}else if (RTGUI_LABEL(btn)->text[0] == '<') {
+			ekey.key = RTGUIK_BACKSPACE;
+	} else {
+			ekey.key = RTGUI_LABEL(btn)->text[0];
+	}
+	rtgui_server_post_event((struct rtgui_event*)&ekey, sizeof(ekey));
+}
+
+void create_softkeyboard_tab(struct rtgui_edit *edit)
+{
+	struct rtgui_button *btn;
+	rtgui_rect_t rect;
+	int i=0;
+	rect.x1 = 0;
+	rect.x2 = 20;
+	rect.y1 = 190;
+	rect.y2 = 210;
+	
+	for (i = 0; i < MAX_INPUT_BTN; i++) 
+	{
+			char num[3];
+			if(i == 11) {
+					num[0] = '^';
+					num[1] = ' ';
+			}else if (i == 10) {
+					num[0] = '<';
+					num[1] = ' ';
+			} else {
+					num[0] = '0'+i;
+					num[1] = ' ';
+			}
+			input_btn[i] = btn = rtgui_button_create(num);
+			rect.x1 = rect.x2;
+			rect.x2 = rect.x1 + 20;
+			if (i == 10) {
+					rect.x2 += 20;
+			}
+			rtgui_widget_set_rect(RTGUI_WIDGET(btn), &rect);
+			RTGUI_WIDGET(btn)->flag |= ~RTGUI_WIDGET_FLAG_FOCUSABLE;
+			rtgui_button_set_onbutton(btn, num_key_hd);
+			rtgui_container_add_child(syscnt, RTGUI_WIDGET(btn));
+			rtgui_widget_hide(RTGUI_WIDGET(input_btn[i]));
+   }
+}
 
 void _rtgui_edit_constructor(struct rtgui_edit *edit)
 {
@@ -75,6 +160,8 @@ void _rtgui_edit_constructor(struct rtgui_edit *edit)
     edit->hscroll = RT_NULL;
     edit->vscroll = RT_NULL;
 #endif
+		g_edit = edit;
+		create_softkeyboard_tab(edit);
 }
 
 void _rtgui_edit_deconstructor(struct rtgui_edit *edit)
@@ -172,7 +259,9 @@ struct rtgui_edit *rtgui_edit_create(struct rtgui_container *container, int left
     struct rtgui_edit *edit;
 
     RT_ASSERT(container != RT_NULL);
-
+		
+		syscnt = container;
+	
     edit = (struct rtgui_edit *)rtgui_widget_create(RTGUI_EDIT_TYPE);
     if (edit != RT_NULL)
     {
@@ -698,6 +787,8 @@ static void rtgui_edit_onmouse(struct rtgui_edit *edit, struct rtgui_event_mouse
 
                 /* set widget focus */
                 rtgui_widget_focus(RTGUI_WIDGET(edit));
+								
+								show_input_button();
 
                 if (RTGUI_WIDGET_IS_FOCUSED(edit))
                 {

@@ -43,6 +43,7 @@
 const rtgui_color_t default_foreground = RTGUI_RGB(0x00, 0x00, 0x00);
 const rtgui_color_t default_background = RTGUI_RGB(212, 208, 200);
 
+extern struct rtgui_font rtgui_font_asc24;
 extern struct rtgui_font rtgui_font_asc16;
 extern struct rtgui_font rtgui_font_asc12;
 
@@ -66,7 +67,9 @@ int rtgui_system_server_init(void)
     rtgui_graphic_driver_get_rect(rtgui_graphic_driver_get_default(), &_mainwin_rect);
 
     /* set the default font */
-#if RTGUI_DEFAULT_FONT_SIZE == 16
+#if RTGUI_DEFAULT_FONT_SIZE == 24
+    rtgui_font_set_defaut(&rtgui_font_asc24);
+#elif RTGUI_DEFAULT_FONT_SIZE == 16
     rtgui_font_set_defaut(&rtgui_font_asc16);
 #elif RTGUI_DEFAULT_FONT_SIZE == 12
     rtgui_font_set_defaut(&rtgui_font_asc12);

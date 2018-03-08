@@ -35,6 +35,8 @@
 const rtgui_color_t selected_color = RTGUI_RGB(0xc0, 0xc0, 0xc0);
 const rtgui_color_t disable_foreground = RTGUI_RGB(0x80, 0x80, 0x80);
 
+extern struct rtgui_font rtgui_font_asc24;
+extern struct rtgui_font rtgui_font_arial24;
 extern struct rtgui_font rtgui_font_asc16;
 extern struct rtgui_font rtgui_font_arial16;
 extern struct rtgui_font rtgui_font_asc12;
@@ -43,7 +45,9 @@ extern struct rtgui_font rtgui_font_arial12;
 /* init theme */
 void rtgui_system_theme_init()
 {
-#if RTGUI_DEFAULT_FONT_SIZE == 16
+#if RTGUI_DEFAULT_FONT_SIZE == 24
+    rtgui_font_set_defaut(&rtgui_font_asc24);
+#elif RTGUI_DEFAULT_FONT_SIZE == 16
     rtgui_font_set_defaut(&rtgui_font_asc16);
 #elif RTGUI_DEFAULT_FONT_SIZE == 12
     rtgui_font_set_defaut(&rtgui_font_asc12);
