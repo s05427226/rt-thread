@@ -228,6 +228,10 @@ void SysTick_CLKSourceConfig(uint32_t SysTick_CLKSource)
   }
 }
 
+void Sys_Soft_Reset(void)
+{
+    SCB->AIRCR =0X05FA0000|(u32)0x04;
+}
 /**
   * @}
   */

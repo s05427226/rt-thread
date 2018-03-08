@@ -958,3 +958,6 @@ void list_prefix(char *prefix)
 static int dummy = 0;
 FINSH_VAR_EXPORT(dummy, finsh_type_int, dummy variable for finsh)
 #endif
+
+extern void Sys_Soft_Reset();
+FINSH_FUNCTION_EXPORT_ALIAS(Sys_Soft_Reset, reset,reset system);
