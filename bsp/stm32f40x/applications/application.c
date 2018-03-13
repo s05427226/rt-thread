@@ -47,12 +47,16 @@
 #include <dfs_file.h>
 #include <dfs_posix.h>
 #endif
-#include "touch_setup.h"
 
-//#define TEST_CALIBRATION
+#ifdef RT_USING_USB_DEVICE
+extern void rt_hw_usbd_init(void);
+extern rt_err_t rt_usb_device_init(void);
+extern void rt_hw_ramdisk_init(void);
+#endif
 
 #ifdef RT_USING_GUIENGINE
-
+//#define TEST_CALIBRATION
+#include "touch_setup.h"
 void load_touch_cfg()
 {
 	calibration_set_restore(calibration_restore);//initialize the pointer to load user data
@@ -140,6 +144,13 @@ void rt_init_thread_entry(void* parameter)
 
 			load_touch_cfg();
 		}
+#endif
+		
+#ifdef RT_USING_USB_DEVICE
+    /* init disk first */
+    rt_hw_ramdisk_init();
+    /* usb device controller driver initilize */
+    rt_hw_usbd_init();
 #endif
 }
 

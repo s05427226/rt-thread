@@ -33,7 +33,7 @@ extern "C" {
 
 #include <rtthread.h>
 
-#define RT_DEBUG_USB                    0x00
+#define RT_DEBUG_USB                    0x01
 #define USB_DYNAMIC                     0x00
 
 #define USB_CLASS_DEVICE                0x00
@@ -125,6 +125,10 @@ extern "C" {
 #define USB_STRING_SERIAL_INDEX         0x03
 #define USB_STRING_CONFIG_INDEX         0x04
 #define USB_STRING_INTERFACE_INDEX      0x05
+#define USB_STRING_OS_INDEX             0x06
+#define USB_STRING_MAX                  USB_STRING_OS_INDEX
+
+#define USB_STRING_OS                   "MSFT100A"
 
 #define USB_PID_OUT                     0x01
 #define USB_PID_ACK                     0x02
@@ -217,6 +221,27 @@ extern "C" {
 #define USB_EP_ATTR(attr)               (attr & USB_EP_ATTR_TYPE_MASK)
 #define USB_EP_DESC_NUM(addr)           (addr & USB_EP_DESC_NUM_MASK)
 #define USB_EP_DIR(addr)                ((addr & USB_DIR_MASK)>>7)
+
+#ifdef RT_USB_DEVICE_HID
+    #ifdef RT_USB_DEVICE_HID_KEYBOARD
+        #define HID_REPORT_ID_KEYBOARD1         1
+        #if RT_USB_DEVICE_HID_KEYBOARD_NUMBER>1
+            #define HID_REPORT_ID_KEYBOARD2     2
+            #if RT_USB_DEVICE_HID_KEYBOARD_NUMBER>2
+                #define HID_REPORT_ID_KEYBOARD3 3
+            #endif
+        #endif
+    #endif
+    #ifdef RT_USB_DEVICE_HID_MEDIA
+        #define HID_REPORT_ID_MEDIA             4
+    #endif
+    #ifdef RT_USB_DEVICE_HID_GENERAL
+        #define HID_REPORT_ID_GENERAL           5
+    #endif
+    #ifdef RT_USB_DEVICE_HID_MOUSE
+        #define HID_REPORT_ID_MOUSE             6
+    #endif
+#endif
 
 #define uswap_32(x) \
     ((((x) & 0xff000000) >> 24) | \
@@ -369,9 +394,86 @@ struct usb_qualifier_descriptor
     rt_uint8_t  bRESERVED;
 } __attribute__ ((packed));
 
+struct usb_os_header_comp_id_descriptor
+{
+    rt_uint32_t dwLength;
+    rt_uint16_t bcdVersion;
+    rt_uint16_t wIndex;
+    rt_uint8_t  bCount;
+    rt_uint8_t  reserved[7];
+};
+typedef struct usb_os_header_comp_id_descriptor * usb_os_header_desc_t;
+
+struct usb_os_function_comp_id_descriptor
+{
+    rt_list_t list;
+    rt_uint8_t bFirstInterfaceNumber;
+    rt_uint8_t reserved1;
+    rt_uint8_t compatibleID[8];
+    rt_uint8_t subCompatibleID[8];
+    rt_uint8_t reserved2[6];
+};
+typedef struct usb_os_function_comp_id_descriptor * usb_os_func_comp_id_desc_t;
+
+struct usb_os_comp_id_descriptor
+{
+    struct usb_os_header_comp_id_descriptor head_desc;
+    rt_list_t func_desc;
+};
+typedef struct usb_os_comp_id_descriptor * usb_os_comp_id_desc_t;
+
+struct usb_os_property_header
+{
+    rt_uint32_t dwLength;
+    rt_uint16_t bcdVersion;
+    rt_uint16_t wIndex;
+    rt_uint16_t wCount;
+};
+typedef struct usb_os_property_header * usb_os_property_header_t;
+struct usb_os_proerty
+{
+    rt_uint32_t dwSize;
+    rt_uint32_t dwPropertyDataType;
+    rt_uint16_t wPropertyNameLength;
+    const char * bPropertyName;
+    rt_uint32_t dwPropertyDataLength;
+    const char * bPropertyData;
+};
+typedef struct usb_os_proerty * usb_os_proerty_t;
+
+// Value	Description
+//  1	    A NULL-terminated Unicode String (REG_SZ)
+//  2	    A NULL-terminated Unicode String that includes environment variables (REG_EXPAND_SZ)
+//  3	    Free-form binary (REG_BINARY)
+//  4	    A little-endian 32-bit integer (REG_DWORD_LITTLE_ENDIAN)
+//  5	    A big-endian 32-bit integer (REG_DWORD_BIG_ENDIAN)
+//  6	    A NULL-terminated Unicode string that contains a symbolic link (REG_LINK)
+//  7	    Multiple NULL-terminated Unicode strings (REG_MULTI_SZ)
+#define USB_OS_PROERTY_TYPE_REG_SZ                      0x01UL
+#define USB_OS_PROERTY_TYPE_REG_EXPAND_SZ               0x02UL
+#define USB_OS_PROERTY_TYPE_REG_BINARY                  0x03UL
+#define USB_OS_PROERTY_TYPE_REG_DWORD_LITTLE_ENDIAN     0x04UL
+#define USB_OS_PROERTY_TYPE_REG_DWORD_BIG_ENDIAN        0x05UL
+#define USB_OS_PROERTY_TYPE_REG_LINK                    0x06UL
+#define USB_OS_PROERTY_TYPE_REG_MULTI_SZ                0x07UL
+
+#define USB_OS_PROERTY_DESC(PropertyDataType,PropertyName,PropertyData) \
+{\
+    .dwSize                 = sizeof(struct usb_os_proerty)-sizeof(const char *)*2\
+                            +sizeof(PropertyName)*2+sizeof(PropertyData)*2,\
+    .dwPropertyDataType     = PropertyDataType,\
+    .wPropertyNameLength    = sizeof(PropertyName)*2,\
+    .bPropertyName          = PropertyName,\
+    .dwPropertyDataLength   = sizeof(PropertyData)*2,\
+    .bPropertyData          = PropertyData\
+}
+
+
 #ifndef HID_SUB_DESCRIPTOR_MAX
 #define  HID_SUB_DESCRIPTOR_MAX        1
 #endif
+
+#ifdef RT_USB_DEVICE_HID
 struct uhid_descriptor
 {
     rt_uint8_t  bLength;
@@ -387,6 +489,15 @@ struct uhid_descriptor
 };
 typedef struct uhid_descriptor* uhid_desc_t;
 
+struct hid_report
+{
+    rt_uint8_t report_id;
+    rt_uint8_t report[63];
+    rt_uint8_t size;
+};
+typedef struct hid_report* hid_report_t;
+extern void HID_Report_Received(hid_report_t report);
+#endif
 struct urequest
 {
     rt_uint8_t  request_type;
@@ -466,7 +577,7 @@ typedef struct ustorage_csw* ustorage_csw_t;
  */
 /* the stack size of USB thread */
 #ifndef RT_USBD_THREAD_STACK_SZ
-#define RT_USBD_THREAD_STACK_SZ 2048
+#define RT_USBD_THREAD_STACK_SZ 512
 #endif
 
 /* the priority of USB thread */

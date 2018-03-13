@@ -154,18 +154,23 @@
 /* RT_GDB_STUB */
 //#define RT_USING_GDB
 
-#define RT_USING_GUIENGINE
+//#define RT_USING_GUIENGINE
+
+#ifdef RT_USING_GUIENGINE
 
 #define RTGUI_NAME_MAX        16  
-
-#define RTGUI_USING_FONT16
-
+#define RTGUI_USING_FONT24
 #define RTGUI_IMAGE_JPEG 
-
 #define RTGUI_USING_HW_CURSOR
-
 #define RTGUI_USING_FONTHZ
-
 #define RTGUI_USING_HZ_BMP
 
+#endif
+/* usb device config*/
+#define RT_USING_USB_DEVICE
+#define RT_USB_DEVICE_COMPOSITE
+#define RT_USB_DEVICE_MSTORAGE
+#define RT_USB_MSTORAGE_DISK_NAME "ramdisk"
+#define USB_VENDOR_ID 0x0483
+#define USB_PRODUCT_ID 0x1000
 #endif

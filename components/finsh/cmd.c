@@ -959,5 +959,5 @@ static int dummy = 0;
 FINSH_VAR_EXPORT(dummy, finsh_type_int, dummy variable for finsh)
 #endif
 
-extern void Sys_Soft_Reset();
+extern void Sys_Soft_Reset(void);
 FINSH_FUNCTION_EXPORT_ALIAS(Sys_Soft_Reset, reset,reset system);
