@@ -168,9 +168,9 @@
 #endif
 /* usb device config*/
 #define RT_USING_USB_DEVICE
-#define RT_USB_DEVICE_COMPOSITE
+//#define RT_USB_DEVICE_COMPOSITE
 #define RT_USB_DEVICE_MSTORAGE
-#define RT_USB_MSTORAGE_DISK_NAME "ramdisk"
+#define RT_USB_MSTORAGE_DISK_NAME "flash0"
 #define USB_VENDOR_ID 0x0483
 #define USB_PRODUCT_ID 0x1000
 #endif

@@ -12,7 +12,20 @@ CMSIS/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c
 
 src += Glob('STM32F4xx_StdPeriph_Driver/src/*.c')
 
+# source files for USB device library
+if GetDepend('RT_USING_USB_DEVICE') == True:
+    src += Split("""
+    STM32_USB_Device_Library/Core/src/usbd_ioreq.c
+    STM32_USB_OTG_Driver/src/usb_core.c
+    STM32_USB_OTG_Driver/src/usb_dcd.c
+    STM32_USB_OTG_Driver/src/usb_dcd_int.c
+    """)
 
+usb_path = [cwd + '/STM32_USB_Device_Library/Core/inc',
+    cwd + '/STM32_USB_OTG_Driver/inc',
+    cwd + '/STM32_USB_Device_Library/Class/cdc/inc',
+    cwd + '/STM32_USB_HOST_Library/Core/inc']
+	
 #add for startup script 
 if rtconfig.CROSS_TOOL == 'gcc':
      src = src + ['CMSIS/ST/STM32F4xx/Source/Templates/gcc_ride7/startup_stm32f4xx.s']
@@ -24,6 +37,9 @@ elif rtconfig.CROSS_TOOL == 'iar':
 path = [cwd + '/STM32F4xx_StdPeriph_Driver/inc', 
     cwd + '/CMSIS/ST/STM32F4xx/Include',
     cwd + '/CMSIS/Include']
+
+# add USB related source code 	
+path += usb_path
 
 #CPPDEFINES = ['USE_STDPERIPH_DRIVER', rtconfig.STM32_TYPE]
 CPPDEFINES = ['USE_STDPERIPH_DRIVER']

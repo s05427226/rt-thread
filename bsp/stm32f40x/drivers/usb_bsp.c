@@ -69,6 +69,22 @@
 #define HOST_SOF_PORT                      GPIOA
 #define HOST_SOF_SIGNAL                    GPIO_Pin_8
 
+void rt_hw_us_delay(rt_uint32_t us)
+{
+	rt_uint32_t delta;
+	rt_uint32_t current_delay;
+	us = us * (SysTick->LOAD/(1000000/RT_TICK_PER_SECOND)); 
+	delta = SysTick->VAL;
+	do
+	{
+		if ( delta > SysTick->VAL )
+			current_delay = delta - SysTick->VAL;
+		else
+			current_delay = SysTick->LOAD + delta - SysTick->VAL;
+	}
+	while( current_delay < us );
+}
+
 /**
   * @}
   */
@@ -418,21 +434,7 @@ static void USB_OTG_BSP_TimeInit ( void )
 void USB_OTG_BSP_uDelay (const uint32_t usec)
 {
 
-#ifdef USE_ACCURATE_TIME
-  BSP_Delay(usec,TIM_USEC_DELAY);
-#else
-  __IO uint32_t count = 0;
-  const uint32_t utime = (120 * usec / 7);
-  do
-  {
-    if ( ++count > utime )
-    {
-      return ;
-    }
-  }
-  while (1);
-#endif
-
+	rt_hw_us_delay(usec);
 }
 
 
@@ -444,10 +446,10 @@ void USB_OTG_BSP_uDelay (const uint32_t usec)
   */
 void USB_OTG_BSP_mDelay (const uint32_t msec)
 {
-    if(msec >= 10)
-        rt_thread_delay(msec / 10);
+    if(msec >= 1000/RT_TICK_PER_SECOND)
+        rt_thread_delay(msec*RT_TICK_PER_SECOND / 1000);
     else
-        rt_thread_delay(msec / 1);
+        rt_thread_delay(RT_TICK_PER_SECOND);
 }
 
 /**

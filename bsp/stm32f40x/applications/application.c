@@ -14,6 +14,7 @@
  */
 
 #include <board.h>
+#include <stm32f4xx.h>
 #include <rtthread.h>
 
 #ifdef RT_USING_LWIP
@@ -89,16 +90,16 @@ void rt_init_thread_entry(void* parameter)
 	#ifdef TEST_CALIBRATION
 		dfs_mkfs("elm", "flash0");
 	#endif
-		if (dfs_mount("flash0", "/", "elm", 0, 0) == 0)
-		{
-			rt_kprintf("flash0 mount to / success!\n");
-		}
-		else
-		{
-			rt_kprintf("flash0 mount to / failed!\n");
-			dfs_mkfs("elm", "flash0");
-			dfs_mount("flash0", "/", "elm", 0, 0);
-		}
+//		if (dfs_mount("flash0", "/", "elm", 0, 0) == 0)
+//		{
+//			rt_kprintf("flash0 mount to / success!\n");
+//		}
+//		else
+//		{
+//			rt_kprintf("flash0 mount to / failed!\n");
+//			dfs_mkfs("elm", "flash0");
+//			dfs_mount("flash0", "/", "elm", 0, 0);
+//		}
 
 #endif
 	}

@@ -27,6 +27,10 @@ if GetDepend('RT_USING_GUIENGINE'):
 	src += ['touch.c']
 	src += ['touch_setup.c']
 	
+if GetDepend('RT_USING_USB_DEVICE') == True:
+	src+= ['usb_bsp.c']
+	src+= ['stm32f4xx_dcd.c']
+	
 CPPPATH = [cwd]
 
 group = DefineGroup('Drivers', src, depend = [''], CPPPATH = CPPPATH)

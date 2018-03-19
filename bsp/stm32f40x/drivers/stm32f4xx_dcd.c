@@ -15,13 +15,9 @@
 
 static struct ep_id _ep_pool[] =
 {
-    {0x0,  USB_EP_ATTR_CONTROL,     USB_DIR_INOUT,  64, ID_ASSIGNED  },
-    {0x1,  USB_EP_ATTR_BULK,        USB_DIR_IN,     64, ID_UNASSIGNED},
-    {0x1,  USB_EP_ATTR_BULK,        USB_DIR_OUT,    64, ID_UNASSIGNED},
-    {0x2,  USB_EP_ATTR_INT,         USB_DIR_IN,     64, ID_UNASSIGNED},
-    {0x2,  USB_EP_ATTR_INT,         USB_DIR_OUT,    64, ID_UNASSIGNED},
-    {0x3,  USB_EP_ATTR_BULK,        USB_DIR_IN,     64, ID_UNASSIGNED},
-    {0x3,  USB_EP_ATTR_BULK,        USB_DIR_OUT,    64, ID_UNASSIGNED},
+    {0x0,  USB_EP_ATTR_CONTROL,     USB_DIR_INOUT,  USB_OTG_MAX_EP0_SIZE, ID_ASSIGNED  },
+    {0x1,  USB_EP_ATTR_BULK,        USB_DIR_IN,     USB_OTG_FS_MAX_PACKET_SIZE, ID_UNASSIGNED},
+    {0x2,  USB_EP_ATTR_BULK,        USB_DIR_OUT,    USB_OTG_FS_MAX_PACKET_SIZE, ID_UNASSIGNED},
     {0xFF, USB_EP_ATTR_TYPE_MASK,   USB_DIR_MASK,   0,  ID_ASSIGNED  },
 };
 
@@ -59,31 +55,16 @@ USBD_Status USBD_DeInit(USB_OTG_CORE_HANDLE *pdev)
 * @param  pdev: device instance
 * @retval status
 */
-static struct urequest setup;
 static rt_uint8_t USBD_SetupStage(USB_OTG_CORE_HANDLE *pdev)
 {
-    struct udev_msg msg;
-
-    msg.content.setup.request_type = *(rt_uint8_t *)(pdev->dev.setup_packet);
-    msg.content.setup.bRequest = *(rt_uint8_t *)(pdev->dev.setup_packet + 1);
-    msg.content.setup.wValue = uswap_8(pdev->dev.setup_packet + 2);
-    msg.content.setup.wIndex = uswap_8(pdev->dev.setup_packet + 4);
-    msg.content.setup.wLength = uswap_8(pdev->dev.setup_packet + 6);
-
-    pdev->dev.in_ep[0].ctl_data_len = setup.wLength;
-
-    msg.type = USB_MSG_SETUP_NOTIFY;
-    msg.dcd = &stm32_dcd;
-
-    rt_usbd_event_signal(&msg);
-
+		rt_usbd_ep0_setup_handler(&stm32_dcd, (struct urequest*)(pdev->dev.setup_packet));
     return USBD_OK;
 }
 
 static rt_uint8_t USBD_Reset(USB_OTG_CORE_HANDLE  *pdev)
 {
     rt_kprintf("USBD_Reset\n");
-
+	
     /* Open EP0 OUT */
     DCD_EP_Open(pdev,
                 0x00,
@@ -99,50 +80,24 @@ static rt_uint8_t USBD_Reset(USB_OTG_CORE_HANDLE  *pdev)
     /* Upon Reset call usr call back */
     pdev->dev.device_status = USB_OTG_DEFAULT;
 
+		rt_usbd_reset_handler(&stm32_dcd);
+	
     return USBD_OK;
 }
 
 static rt_uint8_t USBD_DataOutStage(USB_OTG_CORE_HANDLE *pdev , uint8_t epnum)
 {
-    USB_OTG_EP *ep;
+		rt_uint16_t size;
 
+		size = ((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum].xfer_count;
+	
     if(epnum == 0)
     {
-        ep = &pdev->dev.out_ep[0];
-        if ( pdev->dev.device_state == USB_OTG_EP0_DATA_OUT)
-        {
-            if(ep->rem_data_len > ep->maxpacket)
-            {
-                ep->rem_data_len -=  ep->maxpacket;
-
-                if(pdev->cfg.dma_enable == 1)
-                {
-                    /* in slave mode this, is handled by the RxSTSQLvl ISR */
-                    ep->xfer_buff += ep->maxpacket;
-                }
-                USBD_CtlContinueRx (pdev,
-                                    ep->xfer_buff,
-                                    MIN(ep->rem_data_len ,ep->maxpacket));
-            }
-            else
-            {
-                USBD_CtlSendStatus(pdev);
-                rt_completion_done(&stm32_dcd.completion);
-            }
-        }
+        rt_usbd_ep0_out_handler(&stm32_dcd,size);
     }
     else
     {
-        rt_uint16_t size;
-        struct udev_msg msg;
-
-        size = ((USB_OTG_CORE_HANDLE*)pdev)->dev.out_ep[epnum].xfer_count;
-        msg.type = USB_MSG_DATA_NOTIFY;
-        msg.dcd = &stm32_dcd;
-        msg.content.ep_msg.ep_addr = epnum;
-        msg.content.ep_msg.size = size;
-
-        rt_usbd_event_signal(&msg);
+				rt_usbd_ep_in_handler(&stm32_dcd,epnum,size);
     }
 
     return USBD_OK;
@@ -150,52 +105,16 @@ static rt_uint8_t USBD_DataOutStage(USB_OTG_CORE_HANDLE *pdev , uint8_t epnum)
 
 static rt_uint8_t USBD_DataInStage(USB_OTG_CORE_HANDLE *pdev , uint8_t epnum)
 {
-    USB_OTG_EP *ep;
-
+		rt_uint16_t size;
+	
     if(epnum == 0)
     {
-        ep = &pdev->dev.in_ep[0];
-        if ( pdev->dev.device_state == USB_OTG_EP0_DATA_IN)
-        {
-            if(ep->rem_data_len > ep->maxpacket)
-            {
-                ep->rem_data_len -=  ep->maxpacket;
-                if(pdev->cfg.dma_enable == 1)
-                {
-                    /* in slave mode this, is handled by the TxFifoEmpty ISR */
-                    ep->xfer_buff += ep->maxpacket;
-                }
-                USBD_CtlContinueSendData (pdev,
-                                          ep->xfer_buff,
-                                          ep->rem_data_len);
-            }
-            else
-            {   /* last packet is MPS multiple, so send ZLP packet */
-                if((ep->total_data_len % ep->maxpacket == 0) &&
-                        (ep->total_data_len >= ep->maxpacket) &&
-                        (ep->total_data_len < ep->ctl_data_len ))
-                {
-
-                    USBD_CtlContinueSendData(pdev , RT_NULL, 0);
-                    ep->ctl_data_len = 0;
-                }
-                else
-                {
-                    USBD_CtlReceiveStatus(pdev);
-                }
-            }
-        }
+        rt_usbd_ep0_in_handler(&stm32_dcd);
     }
     else
     {
-        struct udev_msg msg;
-
-        msg.type = USB_MSG_DATA_NOTIFY;
-        msg.dcd = &stm32_dcd;
-        msg.content.ep_msg.ep_addr = epnum | USB_DIR_IN;
-        msg.content.ep_msg.size = 0;
-
-        rt_usbd_event_signal(&msg);
+				size = ((USB_OTG_CORE_HANDLE*)pdev)->dev.in_ep[epnum].xfer_count;
+				rt_usbd_ep_in_handler(&stm32_dcd,epnum | USB_DIR_IN,size);
     }
 
     return USBD_OK;
@@ -203,13 +122,7 @@ static rt_uint8_t USBD_DataInStage(USB_OTG_CORE_HANDLE *pdev , uint8_t epnum)
 
 static rt_uint8_t USBD_SOF(USB_OTG_CORE_HANDLE  *pdev)
 {
-    struct udev_msg msg;
-
-    msg.type = USB_MSG_SOF;
-    msg.dcd = &stm32_dcd;
-
-    rt_usbd_event_signal(&msg);
-
+    rt_usbd_sof_handler(&stm32_dcd);
     return USBD_OK;
 }
 
@@ -252,20 +165,6 @@ USBD_DCD_INT_cb_TypeDef USBD_DCD_INT_cb =
 
 USBD_DCD_INT_cb_TypeDef  *USBD_DCD_INT_fops = &USBD_DCD_INT_cb;
 
-static rt_err_t ep_stall(uep_t ep)
-{
-    if(ep == 0)
-    {
-        DCD_EP_Stall(&USB_OTG_Core, 0x80);
-        DCD_EP_Stall(&USB_OTG_Core, 0);
-        USB_OTG_EP0_OutStart(&USB_OTG_Core);
-    }
-    else
-        DCD_EP_Stall(&USB_OTG_Core, ep->ep_desc->bEndpointAddress);
-
-    return RT_EOK;
-}
-
 static rt_err_t set_address(rt_uint8_t address)
 {
     USB_OTG_Core.dev.device_address = address;
@@ -276,20 +175,19 @@ static rt_err_t set_address(rt_uint8_t address)
 
 static rt_err_t ep_set_stall(rt_uint8_t address)
 {
-		if(address == 0)
+		DCD_EP_Stall(&USB_OTG_Core, address);
+	
+		if((address & 0x7F) == 0)
     {
-        DCD_EP_Stall(&USB_OTG_Core, 0x80);
-        DCD_EP_Stall(&USB_OTG_Core, 0);
         USB_OTG_EP0_OutStart(&USB_OTG_Core);
     }
-    else
-        DCD_EP_Stall(&USB_OTG_Core, address);
+
     return RT_EOK;
 }
 
 static rt_err_t ep_clear_stall(rt_uint8_t address)
 {
-    DCD_EP_ClrStall(&USB_OTG_Core, (rt_uint8_t)(address & 0xFF));  
+    DCD_EP_ClrStall(&USB_OTG_Core, address);  
     return RT_EOK;
 }
 
@@ -325,23 +223,14 @@ static rt_size_t ep_read(rt_uint8_t address, void *buffer)
 
 static rt_size_t ep_read_prepare(rt_uint8_t address, void *buffer, rt_size_t size)
 {
-		if((address & 0x7FU) == 0)
-			USBD_CtlPrepareRx(&USB_OTG_Core, buffer, (rt_uint16_t)size);
-    else
-			DCD_EP_PrepareRx(&USB_OTG_Core, address, buffer, size);
-    return size;
+	DCD_EP_PrepareRx(&USB_OTG_Core, address, buffer, size);
+	return size;
 }
 
 static rt_size_t ep_write(rt_uint8_t address, void *buffer, rt_size_t size)
 {
-	rt_uint32_t len;
-	
-	if((address & 0x7FU) == 0)
-		len = USBD_CtlSendData(&USB_OTG_Core, buffer, (rt_uint16_t)size);
-  else
-		len = DCD_EP_Tx(&USB_OTG_Core, address, buffer, size);
-  
-	return len;
+	DCD_EP_Tx(&USB_OTG_Core, address, buffer, size);
+	return size;
 }
 
 static rt_err_t ep0_send_status(void)
@@ -359,37 +248,6 @@ static rt_err_t wakeup(void)
 {
     return RT_EOK;
 }
-
-//static rt_err_t ep_read(uep_t ep, void *buffer, rt_size_t size)
-//{
-//    uep_desc_t ep_desc;
-
-//    ep_desc = ep->ep_desc;
-
-//    if(ep == 0)
-//        USBD_CtlPrepareRx(&USB_OTG_Core, buffer, (rt_uint16_t)size);
-//    else
-//        DCD_EP_PrepareRx(&USB_OTG_Core, ep_desc->bEndpointAddress, buffer, size);
-
-//    return RT_EOK;
-//}
-
-//static rt_size_t ep_write(uep_t ep, void *buffer, rt_size_t size)
-//{
-//    rt_uint32_t len;
-//    uep_desc_t ep_desc;
-
-//    ep_desc = ep->ep_desc;
-
-//    if(ep == 0)
-//        len = USBD_CtlSendData(&USB_OTG_Core, buffer, (rt_uint16_t)size);
-//    else
-//    {
-//        len = DCD_EP_Tx(&USB_OTG_Core, ep_desc->bEndpointAddress, buffer, size);
-//    }
-
-//    return len;
-//}
 
 static struct udcd_ops stm32_dcd_ops =
 {
@@ -434,7 +292,6 @@ void rt_hw_usbd_init(void)
 		stm32_dcd.ep0.id = &_ep_pool[0];
 
     stm32_dcd.ops = &stm32_dcd_ops;
-    rt_completion_init(&stm32_dcd.completion);
 
     rt_device_register(&stm32_dcd.parent, "usbd", 0);
 		rt_usb_device_init(); 

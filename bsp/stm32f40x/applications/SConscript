@@ -9,6 +9,8 @@ application.c
 startup.c
 """)
 
+if GetDepend('RT_USING_USB_DEVICE'):
+    src += ['ramdisk.c']
 	
 group = DefineGroup('Applications', src, depend = [''], CPPPATH = CPPPATH)
 

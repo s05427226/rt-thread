@@ -142,7 +142,6 @@ struct udcd
     struct uendpoint ep0;
     uep0_stage_t stage;
     struct ep_id* ep_pool;
-		struct rt_completion completion;
 };
 typedef struct udcd* udcd_t;
 
